@@ -2,36 +2,46 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Spin & Win</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
 
+    <!-- MAIN SECTION -->
     <div class="spin-bg">
         <div class="spin-layout">
 
-            <!-- WHEEL -->
+            <!-- ================= WHEEL ================= -->
             <div class="wheel-box">
-                <!-- POINTER -->
+
+                <!-- POINTER (FIXED AT TOP CENTER) -->
                 <div class="pointer"></div>
 
-                <!-- ROTATOR -->
+                <!-- ROTATING WHEEL -->
                 <div id="wheel-rotator">
                     <canvas id="wheel" width="360" height="360"></canvas>
                 </div>
+
             </div>
 
-            <!-- FORM -->
+            <!-- ================= FORM ================= -->
             <div class="form-box">
-                <h2>Try Your Luck</h2>
+                <h2>🎯 Try Your Luck</h2>
 
-                <input id="name" type="text" placeholder="Your Name">
-                <input id="phone" type="tel" placeholder="Phone Number">
-                <input id="email" type="email" placeholder="Email (optional)">
+                <input id="name" type="text" placeholder="Enter your name" />
 
-                <button id="spinBtn" disabled>SPIN NOW !!</button>
+                <input id="phone" type="tel" placeholder="Enter 10-digit phone number" maxlength="10" />
+
+                <input id="email" type="email" placeholder="Email (optional)" />
+
+                <button id="spinBtn" disabled>
+                    SPIN NOW 🎡
+                </button>
 
                 <p id="spinInfo"></p>
             </div>
@@ -39,16 +49,28 @@
         </div>
     </div>
 
-    <!-- POPUP -->
+    <!-- ================= POPUP OVERLAY ================= -->
     <div id="overlay" class="overlay hidden">
         <div class="popup">
+
             <h1>🎉 Congratulations!</h1>
+
+            <!-- OFFER TEXT -->
             <p id="popup-offer"></p>
-            <button id="closePopup">Awesome 😍</button>
+
+            <!-- COUPON CODE (IMPORTANT) -->
+            <p id="popup-coupon" class="coupon"></p>
+
+            <button id="closePopup">
+                Awesome 😍
+            </button>
+
         </div>
     </div>
 
+    <!-- JS -->
     <script src="script.js"></script>
+
 </body>
 
 </html>
