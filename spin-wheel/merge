@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Spin & Win</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <style>
+        /* ===== PAGE ===== */
+        .spin-bg {
+            padding: 80px 20px;
+            background-image: url("https://sonofswaad.com/wp-content/uploads/2025/11/1737953882218.avif");
+            background-size: cover;
+            background-position: center;
+        }
+
+        .spin-layout {
+            display: flex;
+            gap: 60px;
+            justify-content: center;
+            align-items: center;
+            max-width: 1100px;
+            margin: auto;
+            flex-wrap: wrap;
+        }
+
+        /* ===== WHEEL ===== */
+        .wheel-box {
+            position: relative;
+            width: 360px;
+            height: 360px;
+        }
+
+        #wheel-rotator {
+            width: 360px;
+            height: 360px;
+            transition: transform 5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        #wheel {
+            background: #fff;
+            border-radius: 50%;
+            border: 8px solid #000;
+        }
+
+        /* ===== POINTER ===== */
+        .wheel-pointer {
+            position: absolute;
+            top: -26px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 16px solid transparent;
+            border-right: 16px solid transparent;
+            border-top: 32px solid #e11d48;
+            z-index: 20;
+        }
+
+        /* ===== FORM ===== */
+        .form-box {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            width: 320px;
+            border-radius: 14px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-box input,
+        .form-box button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+
+        .form-box input {
+            border: 1px solid #ccc;
+        }
+
+        .form-box input.invalid {
+            border-color: #e11d48;
+            background: #fff1f2;
+        }
+
+        .form-box button {
+            background: linear-gradient(135deg, #f59e0b, #facc15);
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .form-box button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* ===== POPUP ===== */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .overlay.hidden {
+            display: none;
+        }
+
+        .popup {
+            background: linear-gradient(135deg, #fff7ed, #fef3c7);
+            padding: 40px 30px;
+            width: 340px;
+            text-align: center;
+            border-radius: 22px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+            animation: pop 0.6s ease;
+        }
+
+        @keyframes pop {
+            from {
+                transform: scale(0.7);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .popup h1 {
+            font-size: 26px;
+        }
+
+        .offer-badge {
+            background: linear-gradient(135deg, #f97316, #facc15);
+            color: #fff;
+            padding: 12px;
+            font-size: 22px;
+            font-weight: bold;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .coupon {
+            background: #fff;
+            border: 2px dashed #f59e0b;
+            padding: 12px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+        }
+
+        .popup button {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #fff;
+            border: none;
+            padding: 12px 26px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="spin-bg">
+        <div class="spin-layout">
+
+            <div class="wheel-box">
+                <div class="wheel-pointer"></div>
+                <div id="wheel-rotator">
+                    <canvas id="wheel" width="360" height="360"></canvas>
+                </div>
+            </div>
+
+            <div class="form-box">
+                <h2>🎯 Try Your Luck</h2>
+                <input id="name" placeholder="Enter your name" />
+                <input id="phone" placeholder="10 digit phone" maxlength="10" />
+                <input id="email" placeholder="Email (optional)" />
+                <button id="spinBtn" disabled>SPIN NOW 🎡</button>
+                <p id="spinInfo"></p>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="overlay" class="overlay hidden">
+        <div class="popup">
+            <h1>🎉 Congratulations!</h1>
+            <div id="popup-offer" class="offer-badge"></div>
+            <div id="popup-coupon" class="coupon"></div>
+            <button onclick="overlay.classList.add('hidden')">Awesome 😍</button>
+        </div>
+    </div>
+
+    <script>
+
+        /* ===== CANVAS ===== */
+        const canvas = document.getElementById("wheel");
+        const ctx = canvas.getContext("2d");
+        const rotator = document.getElementById("wheel-rotator");
+
+        /* ===== ELEMENTS ===== */
+        const spinBtn = document.getElementById("spinBtn");
+        const spinInfo = document.getElementById("spinInfo");
+        const overlay = document.getElementById("overlay");
+        const popupOffer = document.getElementById("popup-offer");
+        const popupCoupon = document.getElementById("popup-coupon");
+
+        const nameInput = document.getElementById("name");
+        const phoneInput = document.getElementById("phone");
+        const emailInput = document.getElementById("email");
+
+        /* ===== DATA ===== */
+        const labels = ["30% OFF", "15% OFF", "Try Next Time", "40% OFF", "25% OFF", "50% OFF"];
+        const colors = ["#000", "#14c6cc", "#ff006f", "#14c6cc", "#ff006f", "#ffc107"];
+
+        const total = labels.length;
+        const sliceDeg = 360 / total;
+        const center = canvas.width / 2;
+
+        let spinsUsed = 0;
+        let currentRotation = 0;
+
+        /* ===== DRAW WHEEL ===== */
+        labels.forEach((text, i) => {
+            ctx.beginPath();
+            ctx.moveTo(center, center);
+            ctx.arc(center, center, center,
+                i * 2 * Math.PI / total,
+                (i + 1) * 2 * Math.PI / total);
+            ctx.fillStyle = colors[i];
+            ctx.fill();
+
+            ctx.save();
+            ctx.translate(center, center);
+            ctx.rotate(i * 2 * Math.PI / total + Math.PI / total);
+            ctx.fillStyle = "#fff";
+            ctx.font = "bold 14px Arial";
+            ctx.textAlign = "right";
+            ctx.fillText(text, center - 15, 5);
+            ctx.restore();
+        });
+
+        /* ===== VALIDATION ===== */
+        function isValidName(n) {
+            return /^[A-Za-z ]+$/.test(n.trim());
+        }
+
+        function updateUI() {
+            const left = 2 - spinsUsed;
+
+            nameInput.classList.toggle(
+                "invalid",
+                nameInput.value && !isValidName(nameInput.value)
+            );
+
+            spinInfo.innerHTML = `🎯 Spins left: <b>${left}</b>`;
+
+            spinBtn.disabled =
+                left <= 0 ||
+                !isValidName(nameInput.value) ||
+                !/^\d{10}$/.test(phoneInput.value) ||
+                (emailInput.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value));
+        }
+
+        [nameInput, phoneInput, emailInput].forEach(i =>
+            i.addEventListener("input", updateUI)
+        );
+
+        /* ===== SAVE TO GOOGLE SHEET ===== */
+        function saveToSheet(data) {
+            fetch(SHEET_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+        }
+
+        /* ===== SPIN ===== */
+        spinBtn.onclick = () => {
+            if (spinsUsed >= 2) return;
+
+            const winningIndex = spinsUsed === 0
+                ? Math.floor(Math.random() * 5)
+                : 5;
+
+            const targetAngle =
+                (360 - (winningIndex * sliceDeg + sliceDeg / 2)) - 90;
+
+            const currentAngle = ((currentRotation % 360) + 360) % 360;
+            const delta = (targetAngle - currentAngle + 360) % 360;
+            const extraSpins = 5 + Math.floor(Math.random() * 3);
+
+            currentRotation += extraSpins * 360 + delta;
+            rotator.style.transform = `rotate(${currentRotation}deg)`;
+
+            spinsUsed++;
+            updateUI();
+
+            setTimeout(() => {
+                const offer = labels[winningIndex];
+                const discount = offer.match(/\d+/)[0];
+                const coupon = `SONOFSWAAD${discount}`;
+
+                popupOffer.innerText = offer;
+                popupCoupon.innerText = `Coupon Code: ${coupon}`;
+                overlay.classList.remove("hidden");
+
+                saveToSheet({
+                    name: nameInput.value.trim(),
+                    phone: phoneInput.value,
+                    email: emailInput.value || "",
+                    offer,
+                    coupon,
+                    spin: spinsUsed,
+                    time: new Date().toISOString()
+                });
+
+            }, 5200);
+        };
+
+        updateUI();
+    </script>
+
+</body>
+
+</html>
